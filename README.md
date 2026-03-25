@@ -1,5 +1,13 @@
 # 🔐 DevSecOps AI PR Security Agent
 
+## 🎯 Problem
+
+Code reviews often miss security vulnerabilities due to time constraints and lack of expertise.
+
+## 💡 Solution
+
+An AI-powered DevSecOps agent that automatically scans pull requests and provides structured security feedback before merge.
+
 ## 🚀 Overview
 An AI-powered DevSecOps agent that automatically analyzes GitHub Pull Requests for security vulnerabilities and posts structured feedback directly on the PR.
 
@@ -53,3 +61,9 @@ Fix: Remove sensitive logs
 
 ## 📊 Status
 Production-ready (basic)
+
+## 🚀 Impact
+
+- Reduces manual security review effort
+- Detects vulnerabilities early in PR stage
+- Improves code quality automatically
