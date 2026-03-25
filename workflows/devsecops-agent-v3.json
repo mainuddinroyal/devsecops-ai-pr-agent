@@ -1,0 +1,14 @@
+{
+  "name": "DevSecOps AI PR Agent (Production v3)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "github-pr-security"
+      },
+      "name": "GitHub Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [0, 300]
+    }
+  ]
+}
