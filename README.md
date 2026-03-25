@@ -1,43 +1,55 @@
-# DevSecOps AI PR Security Agent
+# 🔐 DevSecOps AI PR Security Agent
 
-A production-oriented AI agent that reviews GitHub Pull Requests and identifies security vulnerabilities before merge.
+## 🚀 Overview
+An AI-powered DevSecOps agent that automatically analyzes GitHub Pull Requests for security vulnerabilities and posts structured feedback directly on the PR.
 
-## Problem
-Code reviews miss security issues due to time constraints and lack of expertise.
+## ⚡ What It Does
+- Triggers on Pull Request events
+- Fetches changed files using GitHub API
+- Filters relevant source code files
+- Uses AI to detect security issues (OWASP-focused)
+- Generates structured findings (Severity, Issue, Fix)
+- Posts automated comments on the PR
 
-## Solution
-This agent automatically analyzes PR changes and posts structured security findings.
-
-## Features
-- PR-based trigger
-- File-level analysis
-- OWASP Top 10 detection
-- Structured output (severity, issue, fix)
-- Automated PR comments
-
-## Architecture
-- n8n (workflow engine)
+## 🏗 Architecture
+- n8n (workflow orchestration)
 - GitHub API
-- AI model for analysis
+- OpenAI API
 
-## Project Structure
-```
-/workflows
-/docs
-/scripts
-```
+## 🔄 Workflow
+1. PR is created
+2. Webhook triggers n8n
+3. Fetch changed files
+4. Filter code files
+5. Analyze each file using AI
+6. Aggregate results
+7. Post security report to PR
 
-## Setup
-1. Import workflow into n8n
-2. Configure GitHub credentials
-3. Add OpenAI API key
-4. Connect webhook to PR events
+## 🧪 Example Output
+## 🔐 Security Report
 
-## Output Example
-```
-[HIGH] SQL Injection risk in UserService.java
+Total Files: 3
+
+---
+
+HIGH - SQL Injection vulnerability
 Fix: Use prepared statements
-```
 
-## Status
-Initial production-ready structure
+---
+
+MEDIUM - Missing input validation
+Fix: Validate user inputs
+
+---
+
+LOW - Logging sensitive data
+Fix: Remove sensitive logs
+
+## ⚙️ Setup
+1. Import workflow into n8n
+2. Configure credentials (GitHub + OpenAI)
+3. Add GitHub webhook
+4. Test with PR
+
+## 📊 Status
+Production-ready (basic)

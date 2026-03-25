@@ -1,0 +1,116 @@
+{
+  "name": "DevSecOps AI PR Agent (Production v3)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "github-pr-security"
+      },
+      "name": "GitHub Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "name": "owner", "value": "={{ $json.body.repository.owner.login }}" },
+            { "name": "repo", "value": "={{ $json.body.repository.name }}" },
+            { "name": "pr_number", "value": "={{ $json.body.pull_request.number }}" }
+          ]
+        }
+      },
+      "name": "Extract PR",
+      "type": "n8n-nodes-base.set",
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{`https://api.github.com/repos/${$json.owner}/${$json.repo}/pulls/${$json.pr_number}/files`}}"
+      },
+      "name": "Get PR Files",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [400, 300],
+      "credentials": {
+        "httpHeaderAuth": "GitHub API"
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const files=$input.item.json;const allow=['.js','.ts','.java','.py'];return files.filter(f=>allow.some(e=>f.filename.endsWith(e))).map(f=>({json:f}));"
+      },
+      "name": "Filter Files",
+      "type": "n8n-nodes-base.code",
+      "position": [600, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1
+      },
+      "name": "Split",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [800, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const f=$json;const patch=f.patch||'No diff available';const prompt=`You are a senior security engineer.\n\nAnalyze this code diff for vulnerabilities.\n\nReturn STRICT format:\n- Severity: HIGH/MEDIUM/LOW\n- Issue:\n- Fix:\n\nFile: ${f.filename}\n\nCode:\n${patch}`;return [{json:{payload:{model:'gpt-4o',messages:[{role:'user',content:prompt}]}}}];"
+      },
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "method": "POST",
+        "body": "={{$json.payload}}"
+      },
+      "name": "AI Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1200, 300],
+      "credentials": {
+        "httpHeaderAuth": "OpenAI API"
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{report:$json.choices[0].message.content}}];"
+      },
+      "name": "Collect",
+      "type": "n8n-nodes-base.code",
+      "position": [1400, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const all=$input.all();const reports=all.map(i=>i.json.report);\n\nconst summary = `## 🔐 Security Report\\n\\nTotal Files: ${reports.length}`;\n\nconst final = summary + '\\n\\n---\\n\\n' + reports.join('\\n\\n---\\n\\n');\n\nreturn [{json:{final}}];"
+      },
+      "name": "Final Report",
+      "type": "n8n-nodes-base.code",
+      "position": [1600, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{`https://api.github.com/repos/${$node[\"Extract PR\"].json.owner}/${$node[\"Extract PR\"].json.repo}/issues/${$node[\"Extract PR\"].json.pr_number}/comments`}}",
+        "body": "={{ { body: $json.final } }}"
+      },
+      "name": "Post to PR",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1800, 300],
+      "credentials": {
+        "httpHeaderAuth": "GitHub API"
+      }
+    }
+  ],
+  "connections": {
+    "GitHub Webhook": { "main": [[{ "node": "Extract PR" }]] },
+    "Extract PR": { "main": [[{ "node": "Get PR Files" }]] },
+    "Get PR Files": { "main": [[{ "node": "Filter Files" }]] },
+    "Filter Files": { "main": [[{ "node": "Split" }]] },
+    "Split": { "main": [[{ "node": "Build Prompt" }]] },
+    "Build Prompt": { "main": [[{ "node": "AI Analysis" }]] },
+    "AI Analysis": { "main": [[{ "node": "Collect" }]] },
+    "Collect": { "main": [[{ "node": "Final Report" }]] },
+    "Final Report": { "main": [[{ "node": "Post to PR" }]] }
+  }
+}
