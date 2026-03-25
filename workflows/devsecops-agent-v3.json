@@ -26,17 +26,14 @@
     },
     {
       "parameters": {
-        "url": "={{`https://api.github.com/repos/${$json.owner}/${$json.repo}/pulls/${$json.pr_number}/files`}}",
-        "options": {
-          "headers": {
-            "Authorization": "Bearer YOUR_GITHUB_TOKEN",
-            "Accept": "application/vnd.github+json"
-          }
-        }
+        "url": "={{`https://api.github.com/repos/${$json.owner}/${$json.repo}/pulls/${$json.pr_number}/files`}}"
       },
       "name": "Get PR Files",
       "type": "n8n-nodes-base.httpRequest",
-      "position": [400, 300]
+      "position": [400, 300],
+      "credentials": {
+        "httpHeaderAuth": "GitHub API"
+      }
     },
     {
       "parameters": {
@@ -47,7 +44,9 @@
       "position": [600, 300]
     },
     {
-      "parameters": { "batchSize": 1 },
+      "parameters": {
+        "batchSize": 1
+      },
       "name": "Split",
       "type": "n8n-nodes-base.splitInBatches",
       "position": [800, 300]
@@ -64,17 +63,14 @@
       "parameters": {
         "url": "https://api.openai.com/v1/chat/completions",
         "method": "POST",
-        "body": "={{$json.payload}}",
-        "options": {
-          "headers": {
-            "Authorization": "Bearer YOUR_OPENAI_API_KEY",
-            "Content-Type": "application/json"
-          }
-        }
+        "body": "={{$json.payload}}"
       },
       "name": "AI Analysis",
       "type": "n8n-nodes-base.httpRequest",
-      "position": [1200, 300]
+      "position": [1200, 300],
+      "credentials": {
+        "httpHeaderAuth": "OpenAI API"
+      }
     },
     {
       "parameters": {
@@ -86,7 +82,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const all=$input.all();const reports=all.map(i=>i.json.report);\nconst summary = `## 🔐 Security Report\\n\\nTotal Files: ${reports.length}`;\nconst final = summary + '\\n\\n---\\n\\n' + reports.join('\\n\\n---\\n\\n');\nreturn [{json:{final}}];"
+        "jsCode": "const all=$input.all();const reports=all.map(i=>i.json.report);\n\nconst summary = `## 🔐 Security Report\\n\\nTotal Files: ${reports.length}`;\n\nconst final = summary + '\\n\\n---\\n\\n' + reports.join('\\n\\n---\\n\\n');\n\nreturn [{json:{final}}];"
       },
       "name": "Final Report",
       "type": "n8n-nodes-base.code",
@@ -96,17 +92,14 @@
       "parameters": {
         "method": "POST",
         "url": "={{`https://api.github.com/repos/${$node[\"Extract PR\"].json.owner}/${$node[\"Extract PR\"].json.repo}/issues/${$node[\"Extract PR\"].json.pr_number}/comments`}}",
-        "body": "={{ { body: $json.final } }}",
-        "options": {
-          "headers": {
-            "Authorization": "Bearer YOUR_GITHUB_TOKEN",
-            "Accept": "application/vnd.github+json"
-          }
-        }
+        "body": "={{ { body: $json.final } }}"
       },
       "name": "Post to PR",
       "type": "n8n-nodes-base.httpRequest",
-      "position": [1800, 300]
+      "position": [1800, 300],
+      "credentials": {
+        "httpHeaderAuth": "GitHub API"
+      }
     }
   ],
   "connections": {
