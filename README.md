@@ -1,4 +1,4 @@
-# 🔐 DevSecOps AI PR Security Agent
+# 🔐 DevSecOps AI PR Security Agent (Automated GitHub Security Reviewer)
 
 ## 🎯 Problem
 
@@ -20,6 +20,17 @@ An AI-powered DevSecOps agent that automatically analyzes GitHub Pull Requests, 
 - Uses AI to detect security vulnerabilities (OWASP-focused)  
 - Generates structured findings (Severity, Issue, Fix)  
 - Posts automated comments directly on the PR  
+
+---
+
+## ⚡ Quick Start
+
+1. Import workflow into n8n  
+2. Add GitHub + OpenAI credentials  
+3. Configure webhook  
+4. Create a Pull Request  
+
+✅ Security report appears automatically on the PR  
 
 ---
 
@@ -88,6 +99,12 @@ Follow the detailed setup guide:
 - Reduces manual code review effort  
 - Prevents vulnerabilities before merge  
 - Improves overall code quality automatically  
+
+---
+
+## 🔎 Keywords
+
+DevSecOps, GitHub Automation, AI Code Review, Security Scanner, n8n, OpenAI  
 
 ---
 
