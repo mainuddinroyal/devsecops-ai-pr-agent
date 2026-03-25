@@ -1,0 +1,9 @@
+{
+  "pull_request": {
+    "number": 1,
+    "changed_files": 2
+  },
+  "repository": {
+    "full_name": "your-repo"
+  }
+}
