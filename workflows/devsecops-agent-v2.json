@@ -1,1 +1,52 @@
-PRODUCTION VERSION PLACEHOLDER
+{
+  "name": "DevSecOps AI PR Agent (Production v2)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "github-pr-security"
+      },
+      "name": "GitHub Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "name": "owner", "value": "={{ $json.body.repository.owner.login }}" },
+            { "name": "repo", "value": "={{ $json.body.repository.name }}" },
+            { "name": "pr_number", "value": "={{ $json.body.pull_request.number }}" }
+          ]
+        }
+      },
+      "name": "Extract PR",
+      "type": "n8n-nodes-base.set",
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{`https://api.github.com/repos/${$json.owner}/${$json.repo}/pulls/${$json.pr_number}/files`}}"
+      },
+      "name": "Get PR Files",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const files=$input.item.json;return files.map(f=>({json:f}));"
+      },
+      "name": "Loop Files",
+      "type": "n8n-nodes-base.code",
+      "position": [600, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const f=$json;const patch=f.patch||'No diff';const prompt=`Analyze security issues.\\nFile:${f.filename}\\n${patch}`;return [{json:{prompt}}];"
+      },
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "position": [800, 300]
+    }
+  ]
+}
