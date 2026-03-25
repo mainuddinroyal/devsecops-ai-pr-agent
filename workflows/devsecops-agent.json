@@ -1,0 +1,46 @@
+{
+  "name": "DevSecOps AI PR Agent (Production)",
+  "nodes": [
+    {
+      "name": "GitHub Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": {
+        "path": "pr-security",
+        "httpMethod": "POST"
+      }
+    },
+    {
+      "name": "Extract PR Data",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "return [{json: {files: $json.pull_request?.changed_files, repo: $json.repository?.full_name}}}];"
+      }
+    },
+    {
+      "name": "AI Security Analysis",
+      "type": "n8n-nodes-base.openai",
+      "parameters": {
+        "operation": "chat",
+        "model": "gpt-4o-mini",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a security auditor. Analyze code diffs for OWASP vulnerabilities. Return severity, issue, and fix."
+          },
+          {
+            "role": "user",
+            "content": "={{JSON.stringify($json)}}"
+          }
+        ]
+      }
+    }
+  ],
+  "connections": {
+    "GitHub Webhook": {
+      "main": [[{ "node": "Extract PR Data", "type": "main", "index": 0 }]]
+    },
+    "Extract PR Data": {
+      "main": [[{ "node": "AI Security Analysis", "type": "main", "index": 0 }]]
+    }
+  }
+}
